@@ -42,9 +42,9 @@ fun NHLModelApp(vm:LiveViewModel = viewModel()) {
         var tab by remember { mutableIntStateOf(0) }
         Scaffold(containerColor=Background,bottomBar={
             NavigationBar(containerColor=CardBg) {
-                NavigationBarItem(selected=tab==0,onClick={tab=0},icon={Text("📅")},label={Text("Live")})
-                NavigationBarItem(selected=tab==1,onClick={tab=1},icon={Text("🏒")},label={Text("Manual")})
-                NavigationBarItem(selected=tab==2,onClick={tab=2},icon={Text("⚙️")},label={Text("Model")})
+                NavigationBarItem(selected=tab==0,onClick={tab=0},icon={Text("📅")},label={Text("Picks")})
+                NavigationBarItem(selected=tab==1,onClick={tab=1},icon={Text("🏒")},label={Text("Matchup")})
+                NavigationBarItem(selected=tab==2,onClick={tab=2},icon={Text("⚙️")},label={Text("Settings")})
             }
         }) { p ->
             Box(Modifier.padding(p)) {
@@ -63,8 +63,8 @@ private fun LiveSlateScreen(vm:LiveViewModel) {
     val state by vm.state.collectAsState()
     LaunchedEffect(Unit) { if(state.games.isEmpty() && !state.loading) vm.refresh() }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
-        Text("NHL MODEL 3.4 LIVE",color=Gold,fontWeight=FontWeight.Black,fontSize=27.sp)
-        Text("Today's slate • MoneyPuck form • calibrated V3.4",color=Muted)
+        Text("PROFESSOR BETS",color=Gold,fontWeight=FontWeight.Black,fontSize=27.sp)
+        Text("NHL Model 3.4 • Today's Picks",color=Muted)
 
         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically) {
             OutlinedButton(onClick={vm.refresh(state.date.minusDays(1))}){Text("‹")}
@@ -75,7 +75,7 @@ private fun LiveSlateScreen(vm:LiveViewModel) {
             OutlinedButton(onClick={vm.refresh(state.date.plusDays(1))}){Text("›")}
         }
         Button(onClick={vm.refresh(state.date)},modifier=Modifier.fillMaxWidth(),colors=ButtonDefaults.buttonColors(containerColor=Gold,contentColor=Color.Black),enabled=!state.loading) {
-            Text(if(state.loading) "UPDATING…" else "REFRESH LIVE DATA",fontWeight=FontWeight.Black)
+            Text(if(state.loading) "UPDATING…" else "REFRESH PICKS",fontWeight=FontWeight.Black)
         }
         if(state.loading) LinearProgressIndicator(Modifier.fillMaxWidth(),color=Green)
         state.error?.let { Text("Refresh error: $it",color=Red) }
@@ -98,20 +98,11 @@ private fun LiveGameCard(lp:LivePrediction) {
         }
         val fav=if(p.homeProbability>=.5) g.homeAbbrev else g.awayAbbrev
         val fp=maxOf(p.homeProbability,p.awayProbability)
-        Text("$fav • ${p.signal}",color=Green,fontWeight=FontWeight.Black,fontSize=22.sp)
+        Text("PROFESSOR BETS PICK",color=Gold,fontWeight=FontWeight.Bold,fontSize=11.sp)
+        Text("$fav • ${p.signal}",color=Green,fontWeight=FontWeight.Black,fontSize=24.sp)
         Stat(g.homeAbbrev,pct(p.homeProbability))
         LinearProgressIndicator(progress={p.homeProbability.toFloat()},modifier=Modifier.fillMaxWidth(),color=Green)
         Stat(g.awayAbbrev,pct(p.awayProbability))
-        lp.homeForm?.let { h -> lp.awayForm?.let { a ->
-            HorizontalDivider(color=Color(0xFF303744))
-            Text("MODEL INPUTS",color=Gold,fontWeight=FontWeight.Bold,fontSize=11.sp)
-            Stat("Elo",String.format(Locale.US,"%.0f / %.0f",h.elo,a.elo))
-            Stat("20G xG%",String.format(Locale.US,"%.3f / %.3f",h.xg20,a.xg20))
-            Stat("20G Corsi%",String.format(Locale.US,"%.3f / %.3f",h.corsi20,a.corsi20))
-            Stat("10G xG%",String.format(Locale.US,"%.3f / %.3f",h.xg10,a.xg10))
-            Stat("20G GSAx/60",String.format(Locale.US,"%+.3f / %+.3f",h.gsax20,a.gsax20))
-            Stat("B2B", "${if(h.b2b) "YES" else "NO"} / ${if(a.b2b) "YES" else "NO"}")
-        }}
         lp.market?.let { m ->
             HorizontalDivider(color=Color(0xFF303744))
             Text("${m.bookmaker} MONEYLINE",color=Gold,fontWeight=FontWeight.Bold,fontSize=11.sp)
@@ -129,7 +120,6 @@ private fun LiveGameCard(lp:LivePrediction) {
             Text("EV per $1: ${signedPct(ev)}",color=if(ev>0)Green else Red)
         }
         lp.note?.let { Text(it,color=Muted,fontSize=11.sp) }
-        Text("Goalie-specific starter adjustment is not applied yet; V3.4 only uses the validated team GSAx proxy.",color=Muted,fontSize=11.sp)
     }
 }
 
